@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Pamplemouche Hub</title>
+    <style>
+        :root {
+            --pamplemouche: #ff9500;
+            --glass: rgba(255, 255, 255, 0.1);
+            --border: rgba(255, 255, 255, 0.15);
+        }
+
+        body {
+            background: #000;
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 20px;
+            padding-top: calc(40px + env(safe-area-inset-top));
+        }
+
+        /* Profil Section */
+        .profile-header {
+            background: var(--glass);
+            border: 0.5px solid var(--border);
+            border-radius: 30px;
+            padding: 25px;
+            text-align: center;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            margin-bottom: 25px;
+        }
+
+        .avatar-large {
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(135deg, var(--pamplemouche), #ff3b30);
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            box-shadow: 0 10px 25px rgba(255, 149, 0, 0.3);
+        }
+
+        .user-id { font-size: 22px; font-weight: 800; margin: 0; }
+        .user-email { color: #8e8e93; font-size: 14px; margin-top: 5px; }
+
+        /* Gestion du Compte */
+        .settings-group {
+            background: var(--glass);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 0.5px solid var(--border);
+            margin-bottom: 25px;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 0.5px solid rgba(255,255,255,0.05);
+            font-size: 16px;
+        }
+
+        .setting-item:last-child { border-bottom: none; }
+        .label { color: #fff; }
+        .value { color: #8e8e93; font-size: 15px; }
+
+        /* Services Grid */
+        h3 { font-size: 13px; color: #8e8e93; text-transform: uppercase; margin-left: 10px; margin-bottom: 10px; }
+        
+        .services-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .service-box {
+            background: var(--glass);
+            border: 0.5px solid var(--border);
+            border-radius: 20px;
+            padding: 15px;
+            text-align: center;
+            text-decoration: none;
+            color: white;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .service-box i { font-size: 24px; display: block; margin-bottom: 5px; }
+
+        .btn-logout {
+            width: 100%;
+            background: rgba(255, 59, 48, 0.2);
+            color: #ff3b30;
+            border: none;
+            padding: 15px;
+            border-radius: 15px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="profile-header">
+        <div class="avatar-large">🍊</div>
+        <h2 class="user-id" id="display-name">Utilisateur</h2>
+        <div class="user-email" id="display-email">@pamplemouche.tech</div>
+    </div>
+
+    <h3>Gestion du Compte</h3>
+    <div class="settings-group">
+        <div class="setting-item">
+            <span class="label">Nom</span>
+            <span class="value" onclick="changeName()" id="val-name">Cliquer pour éditer</span>
+        </div>
+        <div class="setting-item">
+            <span class="label">Abonnement</span>
+            <span class="value">Écosystème Gratuit</span>
+        </div>
+        <div class="setting-item">
+            <span class="label">Sécurité</span>
+            <span class="value">Activée</span>
+        </div>
+    </div>
+
+    <h3>Mes Services</h3>
+    <div class="services-row">
+        <a href="index.html" class="service-box"><i>🚀</i><span>App Store</span></a>
+        <a href="#" class="service-box" style="opacity:0.5"><i>📩</i><span>Mail</span></a>
+    </div>
+
+    <button class="btn-logout" onclick="logout()">Déconnexion</button>
+
+    <script>
+        // Charger les données
+        const user = localStorage.getItem('pamplemouche_user') || 'Invité';
+        document.getElementById('display-name').innerText = user;
+        document.getElementById('display-email').innerText = user.toLowerCase() + "@pamplemouche.tech";
+        document.getElementById('val-name').innerText = user;
+
+        function changeName() {
+            const newName = prompt("Entrez votre nouveau nom :");
+            if (newName) {
+                localStorage.setItem('pamplemouche_user', newName);
+                location.reload();
+            }
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
