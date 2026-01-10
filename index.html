@@ -196,13 +196,14 @@
         <div class="card-title">Sélection Scarlet</div>
         
         <div class="app-row">
-            <div class="app-icon" style="background: linear-gradient(135deg, #ff3b30, #ff9500);"></div>
-            <div class="app-info">
-                <div class="app-name">Scarlet Liquid</div>
-                <div class="app-category">Utilitaire • 45 Mo</div>
-            </div>
-            <button class="btn-get">OBTENIR</button>
-        </div>
+    <div class="app-icon" style="background: linear-gradient(135deg, #ff9500, #ff5e00);">🍊</div>
+    <div class="app-info">
+        <div class="app-name">Pamplemouche Hub</div>
+        <div class="app-category">Système • Centre de contrôle</div>
+    </div>
+    <button class="btn-get" onclick="downloadHub()">OBTENIR</button>
+</div>
+
 
         <div class="app-row">
             <div class="app-icon" style="background: linear-gradient(135deg, #5856d6, #af52de);"></div>
@@ -259,6 +260,21 @@
                 }, 2000);
             });
         });
+        function downloadHub() {
+    // 1. On simule le chargement
+    alert("Préparation du profil Pamplemouche Hub...");
+    
+    // 2. On redirige vers le profil de configuration (si tu en as un)
+    // OU on ouvre simplement l'app si tu veux rester en mode Web
+    setTimeout(() => {
+        // Option A : Ouvrir la page immédiatement
+        window.location.href = 'hub.html'; 
+        
+        // Option B : Si tu as créé un fichier .mobileconfig spécifique pour le hub
+        // window.location.href = 'hub.mobileconfig';
+    }, 2000);
+}
+
     </script>
 
 </body>
