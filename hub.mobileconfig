@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>PayloadContent</key>
+    <array>
+        <dict>
+            <key>FullScreen</key>
+            <true/>
+            <key>IsRemovable</key>
+            <true/>
+            <key>Label</key>
+            <string>Pamplemouche Hub</string>
+            <key>PayloadDescription</key>
+            <string>Gérez votre écosystème Pamplemouche Tech</string>
+            <key>PayloadDisplayName</key>
+            <string>Pamplemouche Hub</string>
+            <key>PayloadIdentifier</key>
+            <string>com.pamplemouche.hub.webclip</string>
+            <key>PayloadType</key>
+            <string>com.apple.webClip.managed</string>
+            <key>PayloadUUID</key>
+            <string>A1B2C3D4-E5F6-47A8-B9C0-D1E2F3A4B5C6</string>
+            <key>PayloadVersion</key>
+            <integer>1</integer>
+            <key>Precomposed</key>
+            <true/>
+            <key>URL</key>
+            <string>URL_DE_TON_HUB</string>
+        </dict>
+    </array>
+    <key>PayloadDisplayName</key>
+    <string>Installation Pamplemouche Hub</string>
+    <key>PayloadIdentifier</key>
+    <string>com.pamplemouche.hub.profile</string>
+    <key>PayloadRemovalDisallowed</key>
+    <false/>
+    <key>PayloadType</key>
+    <string>Configuration</string>
+    <key>PayloadUUID</key>
+    <string>F6E5D4C3-B2A1-4098-9876-543210FEDCBA</string>
+    <key>PayloadVersion</key>
+    <integer>1</integer>
+</dict>
+</plist>
