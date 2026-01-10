@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mon Futur Store</title>
+    <style>
+        :root {
+            --bg-color: #0b0b0f;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --accent-color: #ff3b30; /* Rouge Scarlet */
+            --ios-blue: #007aff; /* Bleu App Store */
+            --text-main: #ffffff;
+            --text-sec: #8e8e93;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            padding-bottom: 100px;
+        }
+
+        header {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        header h1 {
+            font-size: 34px;
+            margin: 0;
+        }
+
+        .user-icon {
+            width: 35px;
+            height: 35px;
+            background: linear-gradient(45deg, var(--accent-color), #ff9500);
+            border-radius: 50%;
+        }
+
+        .section-title {
+            font-size: 22px;
+            font-weight: bold;
+            margin: 25px 0 15px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Style des cartes "À la une" (Style Scarlet) */
+        .featured-card {
+            background: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.8)), url('https://via.placeholder.com/400x200');
+            background-size: cover;
+            height: 200px;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        /* Liste des apps (Style App Store) */
+        .app-item {
+            display: flex;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 12px;
+            border-radius: 18px;
+            margin-bottom: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .app-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            margin-right: 15px;
+            background: #2c2c2e;
+        }
+
+        .app-info {
+            flex-grow: 1;
+        }
+
+        .app-name {
+            font-weight: 600;
+            font-size: 17px;
+        }
+
+        .app-desc {
+            color: var(--text-sec);
+            font-size: 13px;
+        }
+
+        .btn-get {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--ios-blue);
+            border: none;
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 13px;
+        }
+
+        /* Barre de navigation basse */
+        nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 85px;
+            background: rgba(20, 20, 25, 0.8);
+            backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 0.5px solid rgba(255,255,255,0.1);
+            padding-bottom: 20px;
+        }
+
+        .nav-item {
+            color: var(--text-sec);
+            text-align: center;
+            font-size: 10px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div>
+            <div style="color: var(--text-sec); font-size: 13px; font-weight: bold;">10 JANVIER</div>
+            <h1>Aujourd'hui</h1>
+        </div>
+        <div class="user-icon"></div>
+    </header>
+
+    <div class="featured-card">
+        <div style="color: var(--accent-color); font-weight: bold; font-size: 12px;">NOUVEAUTÉ</div>
+        <div style="font-size: 24px; font-weight: bold;">Project Flux</div>
+        <div style="color: #ccc;">L'aventure commence ici.</div>
+    </div>
+
+    <div class="section-title">
+        Applications Populaires
+        <span style="color: var(--ios-blue); font-size: 16px; font-weight: normal;">Tout voir</span>
+    </div>
+
+    <div class="app-item">
+        <div class="app-icon" style="background: linear-gradient(45deg, #12c2e9, #c471ed);"></div>
+        <div class="app-info">
+            <div class="app-name">CyberPulse</div>
+            <div class="app-desc">Utilitaires • Pro</div>
+        </div>
+        <button class="btn-get">Obtenir</button>
+    </div>
+
+    <div class="app-item">
+        <div class="app-icon" style="background: linear-gradient(45deg, #ff416c, #ff4b2b);"></div>
+        <div class="app-info">
+            <div class="app-name">Scarlet Remix</div>
+            <div class="app-desc">Outils • Système</div>
+        </div>
+        <button class="btn-get">Obtenir</button>
+    </div>
+
+    <nav>
+        <a href="#" class="nav-item" style="color: var(--ios-blue);">
+            <div style="font-size: 20px;">📅</div>
+            Aujourd'hui
+        </a>
+        <a href="#" class="nav-item">
+            <div style="font-size: 20px;">🚀</div>
+            Apps
+        </a>
+        <a href="#" class="nav-item">
+            <div style="font-size: 20px;">🔍</div>
+            Recherche
+        </a>
+    </nav>
+
+</body>
+</html>
