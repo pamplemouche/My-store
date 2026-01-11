@@ -7,71 +7,83 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>PampleMail</title>
     <style>
-        :root { --pample: #ff9500; --glass: rgba(255, 255, 255, 0.1); }
-        body { 
-            background: #000; color: white; font-family: -apple-system, sans-serif; margin: 0;
-            padding: 20px; padding-top: calc(50px + env(safe-area-inset-top));
-        }
-        .mail-card {
-            background: var(--glass); border-radius: 20px; padding: 15px; margin-bottom: 12px;
-            border: 0.5px solid rgba(255,255,255,0.15); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-        }
-        .fab {
-            position: fixed; bottom: 30px; right: 20px; background: white; color: black;
-            padding: 15px 25px; border-radius: 30px; font-weight: bold; text-decoration: none;
-        }
-        .logout-btn { color: #ff3b30; font-size: 13px; float: right; }
+        :root { --pample: #ff9500; --glass: rgba(255, 255, 255, 0.12); }
+        body { background: #000; color: white; font-family: -apple-system, sans-serif; margin: 0; padding: 20px; padding-top: calc(50px + env(safe-area-inset-top)); }
+        .mail-card { background: var(--glass); border-radius: 20px; padding: 15px; margin-bottom: 12px; border: 0.5px solid rgba(255,255,255,0.15); }
+        .fab { position: fixed; bottom: 30px; right: 20px; background: white; color: black; padding: 15px 25px; border-radius: 30px; font-weight: bold; text-decoration: none; z-index: 100; }
+        .header { display: flex; justify-content: space-between; align-items: center; }
     </style>
-    <script>
-        (function(a,b,c){if(c in b&&b[c]){var d,e=a.location,f=/^(a|html)$/i;a.addEventListener("click",function(a){d=a.target;while(!f.test(d.nodeName))d=d.parentNode;"href"in d&&(d.href.indexOf("http")||~d.href.indexOf(e.host))&&(a.preventDefault(),e.href=d.href)},!1)}})(document,window.navigator,"standalone")
-    </script>
 </head>
 <body>
 
-    <div onclick="logout()" class="logout-btn">Quitter</div>
-    <h1 style="font-size: 34px;">PampleMail</h1>
-    <p id="welcome" style="color: grey; margin-top: -15px; margin-bottom: 25px;"></p>
+    <div class="header">
+        <h1>PampleMail</h1>
+        <button id="btnQuitter" style="background:none; border:none; color:#ff3b30; font-weight:bold;">QUITTER</button>
+    </div>
+    
+    <div id="inbox" style="margin-top: 20px;">Chargement...</div>
 
-    <div id="inbox"></div>
-
-    <a href="#" class="fab" onclick="compose()">Nouveau</a>
+    <a href="#" class="fab" id="btnNouveau">NOUVEAU</a>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, where, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
         const firebaseConfig = { /* TA CONFIG */ };
         const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
         const db = getFirestore(app);
 
-        const user = localStorage.getItem('pamplemouche_user');
-        if(!user) window.location.replace("auth.html");
-        
-        const myEmail = user + "@pamplemouche.fr.nf";
-        document.getElementById('welcome').innerText = myEmail;
+        let currentUserEmail = "";
 
-        // Écouter les mails
-        const q = query(collection(db, "emails"), where("to", "==", myEmail));
-        onSnapshot(q, (snap) => {
-            const container = document.getElementById('inbox');
-            container.innerHTML = snap.empty ? "Aucun message" : "";
-            snap.forEach(doc => {
-                const m = doc.data();
-                container.innerHTML += `<div class="mail-card"><b style="color:var(--pample)">De: ${m.from}</b><br><b>${m.subject}</b><br><small>${m.content}</small></div>`;
-            });
+        // Vérification de l'utilisateur
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.replace("auth.html");
+            } else {
+                currentUserEmail = user.email;
+                loadMails();
+            }
         });
 
-        window.compose = async () => {
+        // Bouton Quitter
+        document.getElementById('btnQuitter').addEventListener('click', () => {
+            signOut(auth).then(() => window.location.replace("auth.html"));
+        });
+
+        // Bouton Nouveau
+        document.getElementById('btnNouveau').addEventListener('click', async (e) => {
+            e.preventDefault();
             const to = prompt("Destinataire (@pamplemouche.fr.nf)");
             const sub = prompt("Objet");
             const msg = prompt("Message");
+            
             if(to && msg) {
-                await addDoc(collection(db, "emails"), { from: myEmail, to: to, subject: sub, content: msg, timestamp: serverTimestamp() });
-                alert("Envoyé !");
+                try {
+                    await addDoc(collection(db, "emails"), {
+                        from: currentUserEmail,
+                        to: to.toLowerCase().trim(),
+                        subject: sub,
+                        content: msg,
+                        timestamp: serverTimestamp()
+                    });
+                    alert("Envoyé !");
+                } catch(err) { alert("Erreur d'envoi"); }
             }
-        };
+        });
 
-        window.logout = () => { localStorage.clear(); window.location.replace("auth.html"); };
+        function loadMails() {
+            const q = query(collection(db, "emails"), where("to", "==", currentUserEmail));
+            onSnapshot(q, (snap) => {
+                const box = document.getElementById('inbox');
+                box.innerHTML = snap.empty ? "Boîte vide" : "";
+                snap.forEach(doc => {
+                    const m = doc.data();
+                    box.innerHTML += `<div class="mail-card"><b>De: ${m.from}</b><br><b>${m.subject}</b><p>${m.content}</p></div>`;
+                });
+            });
+        }
     </script>
 </body>
 </html>
