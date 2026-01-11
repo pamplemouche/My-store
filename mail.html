@@ -3,65 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>PampleMail</title>
-    
     <style>
-        :root {
-            --pample: #ff9500;
-            --glass: rgba(255, 255, 255, 0.1);
-            --border: rgba(255, 255, 255, 0.15);
+        :root { --pample: #ff9500; --glass: rgba(255, 255, 255, 0.1); }
+        body { 
+            background: #000; color: white; font-family: -apple-system, sans-serif; 
+            margin: 0; padding: 20px; padding-top: calc(40px + env(safe-area-inset-top));
         }
-
-        body {
-            background: #000;
-            background-image: radial-gradient(at 0% 0%, rgba(255, 149, 0, 0.1) 0px, transparent 50%);
-            color: white;
-            font-family: -apple-system, sans-serif;
-            margin: 0; padding: 20px;
-            padding-top: calc(50px + env(safe-area-inset-top));
+        .glass-card { 
+            background: var(--glass); border-radius: 25px; padding: 20px; 
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); 
+            border: 0.5px solid rgba(255,255,255,0.2); margin-bottom: 15px;
         }
-
-        /* Style Liquid Glass pour les cartes */
-        .mail-card {
-            background: var(--glass);
-            border: 0.5px solid var(--border);
-            border-radius: 20px;
-            padding: 15px;
-            margin-bottom: 12px;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+        input { 
+            width: 100%; padding: 12px; margin: 8px 0; border-radius: 12px; 
+            border: none; background: rgba(255,255,255,0.1); color: white; 
         }
-
-        .sender { color: var(--pample); font-weight: bold; font-size: 14px; }
-        .subject { font-size: 17px; font-weight: 600; margin: 5px 0; }
-        .content { color: #aaa; font-size: 14px; }
-
-        /* Bouton Nouveau Message */
-        .fab {
-            position: fixed; bottom: 30px; right: 20px;
-            background: white; color: black;
-            padding: 15px 25px; border-radius: 30px;
-            font-weight: 800; text-decoration: none;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        .btn { 
+            width: 100%; padding: 15px; border-radius: 15px; border: none; 
+            font-weight: bold; cursor: pointer; margin-top: 10px;
         }
-
-        h1 { font-size: 32px; font-weight: 800; margin-bottom: 20px; }
+        .btn-pample { background: var(--pample); color: white; }
+        .mail-item { border-bottom: 0.5px solid #222; padding: 15px 5px; }
+        .sender { color: var(--pample); font-size: 14px; font-weight: bold; }
+        #auth-screen { display: none; text-align: center; }
+        #app-screen { display: none; }
     </style>
 </head>
 <body>
 
-    <h1>PampleMail</h1>
-    <div id="inbox">Chargement des messages...</div>
+    <div id="auth-screen">
+        <div style="font-size: 50px;">🍊</div>
+        <h2>Connexion Pamplemouche</h2>
+        <div class="glass-card">
+            <input type="text" id="login-user" placeholder="Pseudo (ex: enzo)">
+            <button class="btn btn-pample" onclick="login()">Se connecter</button>
+        </div>
+        <p style="font-size: 12px; color: grey;">Votre adresse sera : pseudo@pamplemouche.fr.nf</p>
+    </div>
 
-    <a href="#" class="fab" onclick="composeMail()">+ Nouveau</a>
+    <div id="app-screen">
+        <header style="display: flex; justify-content: space-between; align-items: center;">
+            <h1>PampleMail</h1>
+            <button onclick="logout()" style="background: none; border: none; color: #ff3b30;">Quitter</button>
+        </header>
+        
+        <p id="user-display" style="color: grey; margin-bottom: 20px;"></p>
+
+        <div class="glass-card">
+            <h3>Nouveau Message</h3>
+            <input type="text" id="mail-to" placeholder="À : destinataire@pamplemouche.fr.nf">
+            <input type="text" id="mail-sub" placeholder="Objet">
+            <textarea id="mail-msg" style="width:100%; height:80px; background:rgba(255,255,255,0.05); border:none; border-radius:12px; color:white; padding:10px;" placeholder="Message..."></textarea>
+            <button class="btn btn-pample" onclick="sendEmail()">Envoyer le mail</button>
+        </div>
+
+        <h3>Boîte de réception</h3>
+        <div id="inbox-list">Chargement...</div>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, query, where, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, where, onSnapshot, serverTimestamp, orderBy } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
-  const firebaseConfig = {
+        const firebaseConfig = {
   apiKey: "AIzaSyB7rdwaFDFrjHkT_Q8g7HdJQmOe13wNCao",
   authDomain: "mail-pamplemouche.firebaseapp.com",
   projectId: "mail-pamplemouche",
@@ -74,46 +79,76 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Récupération de l'utilisateur (depuis le Hub)
-        const user = localStorage.getItem('pamplemouche_user') || 'Invité';
-        const myEmail = user.toLowerCase() + "@pamplemouche.fr.nf";
+        // --- GESTION DE L'INTERFACE ---
+        function checkAuth() {
+            const user = localStorage.getItem('pamplemouche_user');
+            if (user) {
+                document.getElementById('auth-screen').style.display = 'none';
+                document.getElementById('app-screen').style.display = 'block';
+                document.getElementById('user-display').innerText = "Connecté : " + user + "@pamplemouche.fr.nf";
+                loadMails(user + "@pamplemouche.fr.nf");
+            } else {
+                document.getElementById('auth-screen').style.display = 'block';
+                document.getElementById('app-screen').style.display = 'none';
+            }
+        }
 
-        // RÉCEPTION EN TEMPS RÉEL
-        const q = query(collection(db, "emails"), where("to", "==", myEmail));
-        
-        onSnapshot(q, (snapshot) => {
-            const container = document.getElementById('inbox');
-            container.innerHTML = snapshot.empty ? "Aucun message." : "";
-            
-            snapshot.forEach((doc) => {
-                const mail = doc.data();
-                container.innerHTML += `
-                    <div class="mail-card">
-                        <div class="sender">De: ${mail.from}</div>
-                        <div class="subject">${mail.subject}</div>
-                        <div class="content">${mail.content}</div>
-                    </div>
-                `;
-            });
-        });
-
-        // ENVOI
-        window.composeMail = async () => {
-            const to = prompt("Destinataire (@pamplemouche.fr.nf) :");
-            const sub = prompt("Objet :");
-            const msg = prompt("Message :");
-
-            if (to && msg) {
-                await addDoc(collection(db, "emails"), {
-                    from: myEmail,
-                    to: to.toLowerCase(),
-                    subject: sub,
-                    content: msg,
-                    timestamp: new Date()
-                });
-                alert("Envoyé !");
+        window.login = () => {
+            const user = document.getElementById('login-user').value.trim();
+            if (user) {
+                localStorage.setItem('pamplemouche_user', user);
+                checkAuth();
             }
         };
+
+        window.logout = () => {
+            localStorage.removeItem('pamplemouche_user');
+            checkAuth();
+        };
+
+        // --- ENVOI DES MAILS ---
+        window.sendEmail = async () => {
+            const from = localStorage.getItem('pamplemouche_user') + "@pamplemouche.fr.nf";
+            const to = document.getElementById('mail-to').value.toLowerCase().trim();
+            const sub = document.getElementById('mail-sub').value;
+            const msg = document.getElementById('mail-msg').value;
+
+            if (to && msg) {
+                try {
+                    await addDoc(collection(db, "emails"), {
+                        from: from,
+                        to: to,
+                        subject: sub || "(Sans objet)",
+                        content: msg,
+                        timestamp: serverTimestamp()
+                    });
+                    alert("PampleMail envoyé !");
+                    document.getElementById('mail-to').value = "";
+                    document.getElementById('mail-sub').value = "";
+                    document.getElementById('mail-msg').value = "";
+                } catch (e) { alert("Erreur d'envoi"); }
+            } else { alert("Remplissez le destinataire et le message"); }
+        };
+
+        // --- RÉCEPTION EN TEMPS RÉEL ---
+        function loadMails(myEmail) {
+            const q = query(collection(db, "emails"), where("to", "==", myEmail));
+            onSnapshot(q, (snapshot) => {
+                const list = document.getElementById('inbox-list');
+                list.innerHTML = snapshot.empty ? "Aucun message reçu." : "";
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    list.innerHTML += `
+                        <div class="mail-item">
+                            <div class="sender">De: ${data.from}</div>
+                            <div style="font-weight:600">${data.subject}</div>
+                            <div style="color:grey; font-size:13px">${data.content}</div>
+                        </div>`;
+                });
+            });
+        }
+
+        checkAuth();
     </script>
 </body>
 </html>
