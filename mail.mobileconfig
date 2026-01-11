@@ -8,7 +8,7 @@
             <key>FullScreen</key><true/>
             <key>Label</key><string>PampleMail</string>
             <key>PayloadType</key><string>com.apple.webClip.managed</string>
-            <key>URL</key><string>https://pamplemouche.github.io/</string>
+            <key>URL</key><string>https://pamplemouche.github.io/My-store/mail.html</string>
         </dict>
     </array>
     <key>PayloadDisplayName</key><string>PampleMail</string>
