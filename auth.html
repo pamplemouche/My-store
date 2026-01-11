@@ -5,121 +5,68 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Connexion Pamplemouche</title>
+    <title>Pamplemouche ID</title>
     <style>
         :root { --pample: #ff9500; --glass: rgba(255, 255, 255, 0.1); }
-        body { 
-            background: #000; color: white; font-family: -apple-system, sans-serif; 
-            display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;
-            padding-top: env(safe-area-inset-top);
-        }
-        .auth-card {
-            width: 85%; max-width: 350px; padding: 30px; border-radius: 30px;
-            background: var(--glass); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-            border: 0.5px solid rgba(255,255,255,0.2); text-align: center;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-        }
-        input {
-            width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px;
-            border: none; background: rgba(255,255,255,0.08); color: white; font-size: 16px; outline: none;
-        }
-        .btn {
-            width: 100%; padding: 15px; border-radius: 15px; border: none;
-            font-weight: bold; font-size: 16px; margin-top: 15px; cursor: pointer; transition: 0.3s;
-        }
+        body { background: #000; color: white; font-family: -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; padding-top: env(safe-area-inset-top); }
+        .auth-card { width: 85%; max-width: 350px; padding: 30px; border-radius: 30px; background: var(--glass); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 0.5px solid rgba(255,255,255,0.2); text-align: center; }
+        input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px; border: none; background: rgba(255,255,255,0.08); color: white; font-size: 16px; outline: none; }
+        .btn { width: 100%; padding: 15px; border-radius: 15px; border: none; font-weight: bold; font-size: 16px; margin-top: 15px; cursor: pointer; }
         .btn-main { background: var(--pample); color: white; }
-        .btn-sub { background: none; color: var(--pample); font-size: 13px; margin-top: 10px; }
-        #err { color: #ff3b30; font-size: 12px; margin-top: 10px; min-height: 15px; }
+        #err { color: #ff3b30; font-size: 12px; margin-top: 10px; }
     </style>
-    <script>
-        // Script pour rester dans le Clip Web (Anti-Safari)
-        (function(a,b,c){if(c in b&&b[c]){var d,e=a.location,f=/^(a|html)$/i;a.addEventListener("click",function(a){d=a.target;while(!f.test(d.nodeName))d=d.parentNode;"href"in d&&(d.href.indexOf("http")||~d.href.indexOf(e.host))&&(a.preventDefault(),e.href=d.href)},!1)}})(document,window.navigator,"standalone")
-    </script>
 </head>
 <body>
-
     <div class="auth-card">
-        <div style="font-size: 50px; margin-bottom: 10px;">🍊</div>
+        <div style="font-size: 50px;">🍊</div>
         <h2 id="title">Connexion</h2>
-        
         <input type="email" id="email" placeholder="Email (ex: enzo@pamplemouche.fr.nf)">
         <input type="password" id="pass" placeholder="Mot de passe">
-        
-        <button class="btn btn-main" onclick="handleAuth()">Valider</button>
-        <button class="btn btn-sub" onclick="toggleMode()" id="switchText">Pas de compte ? S'inscrire</button>
-        
+        <button class="btn btn-main" id="btnSubmit">Valider</button>
+        <button class="btn" style="background:none; color:var(--pample); font-size:13px" id="btnToggle">Créer un compte</button>
         <p id="err"></p>
     </div>
 
     <script type="module">
-        // Importation des outils Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
-
-        // 1. CONFIGURATION (Remplace par tes infos de la console Firebase)
-      const firebaseConfig = {
+const firebaseConfig = {
   apiKey: "AIzaSyB7rdwaFDFrjHkT_Q8g7HdJQmOe13wNCao",
   authDomain: "mail-pamplemouche.firebaseapp.com",
   projectId: "mail-pamplemouche",
   storageBucket: "mail-pamplemouche.firebasestorage.app",
   messagingSenderId: "892041516568",
   appId: "1:892041516568:web:aa9fb6a1a02bfe5e01156d",
-  measurementId: "G-9FFK35CVCL"
+  
 };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const db = getFirestore(app);
-        
         let isLogin = true;
 
-        window.toggleMode = () => {
+        // Attachement des événements (plus fiable que onclick dans le HTML)
+        document.getElementById('btnToggle').addEventListener('click', () => {
             isLogin = !isLogin;
             document.getElementById('title').innerText = isLogin ? "Connexion" : "Inscription";
-            document.getElementById('switchText').innerText = isLogin ? "Pas de compte ? S'inscrire" : "Déjà un compte ? Se connecter";
-        };
+            document.getElementById('btnToggle').innerText = isLogin ? "Créer un compte" : "J'ai déjà un compte";
+        });
 
-        window.handleAuth = async () => {
+        document.getElementById('btnSubmit').addEventListener('click', async () => {
             const email = document.getElementById('email').value;
             const pass = document.getElementById('pass').value;
             const errDiv = document.getElementById('err');
-            errDiv.innerText = "";
-
-            if(!email || !pass) {
-                errDiv.innerText = "Champs vides";
-                return;
-            }
-
+            
             try {
-                let userCredential;
-                
                 if(isLogin) {
-                    // CONNEXION
-                    userCredential = await signInWithEmailAndPassword(auth, email, pass);
+                    await signInWithEmailAndPassword(auth, email, pass);
                 } else {
-                    // INSCRIPTION
-                    userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-                    
-                    // On crée le profil utilisateur dans Firestore
-                    const pseudo = email.split('@')[0];
-                    await setDoc(doc(db, "users", userCredential.user.uid), {
-                        pseudo: pseudo,
-                        email: email,
-                        created: new Date()
-                    });
+                    await createUserWithEmailAndPassword(auth, email, pass);
                 }
-                
-                // Sauvegarde du pseudo localement pour la messagerie
-                localStorage.setItem('pamplemouche_user', email.split('@')[0]);
-                
-                // Navigation vers le mail sans barre Safari
-                window.location.replace("mail.html");
-                
+                window.location.replace("mail.html"); // Navigation clip web
             } catch(e) {
-                errDiv.innerText = "Erreur: " + e.message;
+                errDiv.innerText = "Erreur : " + e.message;
             }
-        };
+        });
     </script>
 </body>
 </html>
