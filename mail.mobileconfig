@@ -5,15 +5,39 @@
     <key>PayloadContent</key>
     <array>
         <dict>
-            <key>FullScreen</key><true/>
-            <key>Label</key><string>PampleMail</string>
-            <key>PayloadType</key><string>com.apple.webClip.managed</string>
-            <key>URL</key><string>https://pamplemouche.github.io/My-store/mail.html</string>
+            <key>FullScreen</key>
+            <true/>
+            <key>IsRemovable</key>
+            <true/>
+            <key>Label</key>
+            <string>PampleMail</string>
+            <key>PayloadDescription</key>
+            <string>Messagerie Pamplemouche Tech</string>
+            <key>PayloadDisplayName</key>
+            <string>PampleMail</string>
+            <key>PayloadIdentifier</key>
+            <string>com.pamplemouche.mail.webclip</string>
+            <key>PayloadType</key>
+            <string>com.apple.webClip.managed</string>
+            <key>PayloadUUID</key>
+            <string>B1C2D3E4-F5A6-47B8-C9D0-E1F2A3B4C5D6</string>
+            <key>PayloadVersion</key>
+            <integer>1</integer>
+            <key>URL</key>
+            <string>https://pamplemouche.github.io/My-Hub/mail.html</string>
         </dict>
     </array>
-    <key>PayloadDisplayName</key><string>PampleMail</string>
-    <key>PayloadType</key><string>Configuration</string>
-    <key>PayloadUUID</key><string>B1C2D3E4-F5A6-47B8-C9D0-E1F2A3B4C5D6</string>
-    <key>PayloadVersion</key><integer>1</integer>
+    <key>PayloadDisplayName</key>
+    <string>PampleMail Installation</string>
+    <key>PayloadIdentifier</key>
+    <string>com.pamplemouche.mail.profile</string>
+    <key>PayloadRemovalDisallowed</key>
+    <false/>
+    <key>PayloadType</key>
+    <string>Configuration</string>
+    <key>PayloadUUID</key>
+    <string>D1E2F3A4-B5C6-47D8-E9F0-A1B2C3D4E5F6</string>
+    <key>PayloadVersion</key>
+    <integer>1</integer>
 </dict>
 </plist>
