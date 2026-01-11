@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>PampleMail</title>
+    
+    <style>
+        :root {
+            --pample: #ff9500;
+            --glass: rgba(255, 255, 255, 0.1);
+            --border: rgba(255, 255, 255, 0.15);
+        }
+
+        body {
+            background: #000;
+            background-image: radial-gradient(at 0% 0%, rgba(255, 149, 0, 0.1) 0px, transparent 50%);
+            color: white;
+            font-family: -apple-system, sans-serif;
+            margin: 0; padding: 20px;
+            padding-top: calc(50px + env(safe-area-inset-top));
+        }
+
+        /* Style Liquid Glass pour les cartes */
+        .mail-card {
+            background: var(--glass);
+            border: 0.5px solid var(--border);
+            border-radius: 20px;
+            padding: 15px;
+            margin-bottom: 12px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .sender { color: var(--pample); font-weight: bold; font-size: 14px; }
+        .subject { font-size: 17px; font-weight: 600; margin: 5px 0; }
+        .content { color: #aaa; font-size: 14px; }
+
+        /* Bouton Nouveau Message */
+        .fab {
+            position: fixed; bottom: 30px; right: 20px;
+            background: white; color: black;
+            padding: 15px 25px; border-radius: 30px;
+            font-weight: 800; text-decoration: none;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+
+        h1 { font-size: 32px; font-weight: 800; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+    <h1>PampleMail</h1>
+    <div id="inbox">Chargement des messages...</div>
+
+    <a href="#" class="fab" onclick="composeMail()">+ Nouveau</a>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, query, where, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+  apiKey: "AIzaSyB7rdwaFDFrjHkT_Q8g7HdJQmOe13wNCao",
+  authDomain: "mail-pamplemouche.firebaseapp.com",
+  projectId: "mail-pamplemouche",
+  storageBucket: "mail-pamplemouche.firebasestorage.app",
+  messagingSenderId: "892041516568",
+  appId: "1:892041516568:web:aa9fb6a1a02bfe5e01156d",
+  measurementId: "G-9FFK35CVCL"
+};
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Récupération de l'utilisateur (depuis le Hub)
+        const user = localStorage.getItem('pamplemouche_user') || 'Invité';
+        const myEmail = user.toLowerCase() + "@pamplemouche.fr.nf";
+
+        // RÉCEPTION EN TEMPS RÉEL
+        const q = query(collection(db, "emails"), where("to", "==", myEmail));
+        
+        onSnapshot(q, (snapshot) => {
+            const container = document.getElementById('inbox');
+            container.innerHTML = snapshot.empty ? "Aucun message." : "";
+            
+            snapshot.forEach((doc) => {
+                const mail = doc.data();
+                container.innerHTML += `
+                    <div class="mail-card">
+                        <div class="sender">De: ${mail.from}</div>
+                        <div class="subject">${mail.subject}</div>
+                        <div class="content">${mail.content}</div>
+                    </div>
+                `;
+            });
+        });
+
+        // ENVOI
+        window.composeMail = async () => {
+            const to = prompt("Destinataire (@pamplemouche.fr.nf) :");
+            const sub = prompt("Objet :");
+            const msg = prompt("Message :");
+
+            if (to && msg) {
+                await addDoc(collection(db, "emails"), {
+                    from: myEmail,
+                    to: to.toLowerCase(),
+                    subject: sub,
+                    content: msg,
+                    timestamp: new Date()
+                });
+                alert("Envoyé !");
+            }
+        };
+    </script>
+</body>
+</html>
