@@ -5,82 +5,109 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>PampleMail</title>
     <style>
-        :root { --pample: #ff9500; --glass: rgba(255, 255, 255, 0.12); }
-        body { background: #000; color: white; font-family: -apple-system, sans-serif; margin: 0; padding: 20px; padding-top: calc(50px + env(safe-area-inset-top)); }
-        .mail-card { background: var(--glass); border-radius: 20px; padding: 15px; margin-bottom: 12px; border: 0.5px solid rgba(255,255,255,0.15); }
-        .fab { position: fixed; bottom: 30px; right: 20px; background: white; color: black; padding: 15px 25px; border-radius: 30px; font-weight: bold; text-decoration: none; z-index: 100; }
-        .header { display: flex; justify-content: space-between; align-items: center; }
+        :root { --pample: #ff9500; }
+        body { background: #000; color: #fff; font-family: -apple-system, sans-serif; margin: 0; padding: 20px; padding-top: calc(40px + env(safe-area-inset-top)); }
+        
+        .mail-card { background: #1c1c1e; padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 0.5px solid #333; }
+        .mail-from { color: var(--pample); font-weight: bold; font-size: 14px; }
+        .mail-sub { font-weight: 600; margin-top: 5px; }
+
+        .fab { position: fixed; bottom: 30px; right: 20px; background: #fff; color: #000; padding: 15px 25px; border-radius: 30px; font-weight: bold; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 50; }
+
+        /* MODAL SHEET COULISSANT */
+        #compose-sheet {
+            position: fixed; top: 100%; left: 0; width: 100%; height: 92%;
+            background: #121212; border-radius: 20px 20px 0 0;
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            z-index: 100; padding: 20px; box-sizing: border-box;
+            border-top: 1px solid #333;
+        }
+        #compose-sheet.active { transform: translateY(-100%); }
+        .handle { width: 40px; height: 5px; background: #444; border-radius: 5px; margin: 0 auto 20px; }
+        input, textarea { width: 100%; background: none; border: none; border-bottom: 0.5px solid #333; color: #fff; padding: 15px 0; font-size: 16px; outline: none; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>PampleMail</h1>
-        <button id="btnQuitter" style="background:none; border:none; color:#ff3b30; font-weight:bold;">QUITTER</button>
-    </div>
-    
-    <div id="inbox" style="margin-top: 20px;">Chargement...</div>
+    <header style="display:flex; justify-content:space-between; align-items:center;">
+        <h1 style="font-size:32px; font-weight:800;">PampleMail</h1>
+        <button id="out" style="background:none; border:none; color:#ff3b30;">Quitter</button>
+    </header>
 
-    <a href="#" class="fab" id="btnNouveau">NOUVEAU</a>
+    <div id="inbox-list" style="margin-top:20px;">Chargement...</div>
+
+    <div class="fab" onclick="openCompose()">NOUVEAU</div>
+
+    <div id="compose-sheet">
+        <div class="handle" onclick="closeCompose()"></div>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <button onclick="closeCompose()" style="color:#ff3b30; background:none; border:none;">Annuler</button>
+            <b style="font-size:16px;">Nouveau Message</b>
+            <button id="sendBtn" style="color:var(--pample); background:none; border:none; font-weight:bold; font-size:16px;">Envoyer</button>
+        </div>
+        <input type="email" id="to" placeholder="À (email complet)">
+        <input type="text" id="subject" placeholder="Objet">
+        <textarea id="message" placeholder="Votre message..." style="height:350px; border:none;"></textarea>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, onSnapshot, serverTimestamp, orderBy } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
 
-        const firebaseConfig = { /* TA CONFIG */ };
+        // COPIE TES CLÉS ICI
+        const firebaseConfig = { apiKey: "AIzaSyB7rdwaFDFrjHkT_Q8g7HdJQmOe13wNCao",
+  authDomain: "mail-pamplemouche.firebaseapp.com",
+  projectId: "mail-pamplemouche",
+  storageBucket: "mail-pamplemouche.firebasestorage.app",
+  messagingSenderId: "892041516568",
+  appId: "1:892041516568:web:aa9fb6a1a02bfe5e01156d",
+  measurementId: "G-9FFK35CVCL" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        let currentUserEmail = "";
-
-        // Vérification de l'utilisateur
         onAuthStateChanged(auth, (user) => {
-            if (!user) {
-                window.location.replace("auth.html");
-            } else {
-                currentUserEmail = user.email;
-                loadMails();
-            }
+            if(!user) window.location.replace("auth.html");
+            else loadMails(user.email);
         });
 
-        // Bouton Quitter
-        document.getElementById('btnQuitter').addEventListener('click', () => {
-            signOut(auth).then(() => window.location.replace("auth.html"));
-        });
+        window.openCompose = () => document.getElementById('compose-sheet').classList.add('active');
+        window.closeCompose = () => document.getElementById('compose-sheet').classList.remove('active');
 
-        // Bouton Nouveau
-        document.getElementById('btnNouveau').addEventListener('click', async (e) => {
-            e.preventDefault();
-            const to = prompt("Destinataire (@pamplemouche.fr.nf)");
-            const sub = prompt("Objet");
-            const msg = prompt("Message");
-            
+        document.getElementById('out').onclick = () => signOut(auth);
+
+        document.getElementById('sendBtn').onclick = async () => {
+            const to = document.getElementById('to').value.toLowerCase().trim();
+            const msg = document.getElementById('message').value;
             if(to && msg) {
                 try {
                     await addDoc(collection(db, "emails"), {
-                        from: currentUserEmail,
-                        to: to.toLowerCase().trim(),
-                        subject: sub,
+                        from: auth.currentUser.email,
+                        to: to,
+                        subject: document.getElementById('subject').value,
                         content: msg,
                         timestamp: serverTimestamp()
                     });
-                    alert("Envoyé !");
-                } catch(err) { alert("Erreur d'envoi"); }
+                    closeCompose();
+                    alert("PampleMail envoyé !");
+                } catch(e) { alert("Erreur d'envoi"); }
             }
-        });
+        };
 
-        function loadMails() {
-            const q = query(collection(db, "emails"), where("to", "==", currentUserEmail));
+        function loadMails(myEmail) {
+            const q = query(collection(db, "emails"), where("to", "==", myEmail.toLowerCase()));
             onSnapshot(q, (snap) => {
-                const box = document.getElementById('inbox');
-                box.innerHTML = snap.empty ? "Boîte vide" : "";
+                const list = document.getElementById('inbox-list');
+                list.innerHTML = snap.empty ? "<p style='color:grey'>Boîte vide.</p>" : "";
                 snap.forEach(doc => {
-                    const m = doc.data();
-                    box.innerHTML += `<div class="mail-card"><b>De: ${m.from}</b><br><b>${m.subject}</b><p>${m.content}</p></div>`;
+                    const d = doc.data();
+                    list.innerHTML += `<div class="mail-card">
+                        <div class="mail-from">De: ${d.from}</div>
+                        <div class="mail-sub">${d.subject || "(Sans objet)"}</div>
+                        <p style="font-size:14px; color:#ccc; margin-top:8px;">${d.content}</p>
+                    </div>`;
                 });
             });
         }
